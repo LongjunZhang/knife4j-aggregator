@@ -1,86 +1,217 @@
 # Knife4j Aggregator
 
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-[![Java](https://img.shields.io/badge/Java-17+-green.svg)](https://openjdk.org/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.x-brightgreen.svg)](https://spring.io/projects/spring-boot)
+<p align="center">
+  <b>零侵入 API 文档聚合 + AI 智能分析</b>
+</p>
 
-**零侵入的 API 文档聚合网关，支持 AI 错误分析**
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" alt="License"></a>
+  <a href="https://openjdk.org/"><img src="https://img.shields.io/badge/Java-17+-green.svg" alt="Java"></a>
+  <a href="https://spring.io/projects/spring-boot"><img src="https://img.shields.io/badge/Spring%20Boot-3.2.x-brightgreen.svg" alt="Spring Boot"></a>
+  <a href="https://github.com/xiaoymin/knife4j"><img src="https://img.shields.io/badge/Knife4j-4.x-orange.svg" alt="Knife4j"></a>
+</p>
 
-Non-invasive API documentation aggregation gateway with AI-powered error analysis.
+---
 
-## 特性
+## 为什么选择 Knife4j Aggregator？
 
-- **零侵入聚合**: 基于 Spring Cloud Gateway，无需修改业务服务代码即可聚合所有微服务的 API 文档
-- **多版本支持**: 同时支持 Swagger 2.0 和 OpenAPI 3.0 规范，自动转换
-- **AI 错误分析**: 集成 Ollama，提供智能参数生成和错误堆栈分析
-- **API 版本管理**: 自动检测 API 变更，支持历史版本对比
-- **文档缓存**: 智能缓存机制，提升文档加载性能
-- **错误收集器**: 提供 SDK，一行代码集成错误收集能力
+在微服务架构中，API 文档管理面临诸多挑战：**服务下线文档 404**、**无版本追溯**、**调试效率低**。
+
+Knife4j Aggregator 提供了一套完整的解决方案：
+
+```
++------------------------------------------------------------------+
+|                                                                  |
+|   "微服务下线了，文档还能看吗？"                                    |
+|                                                                  |
+|   官方方案:  用户 --> Gateway --> 微服务(下线) --> 404 Not Found   |
+|                                                                  |
+|   Aggregator: 用户 --> 内存缓存 --> MongoDB --> 历史版本文档 OK!    |
+|                                                                  |
++------------------------------------------------------------------+
+```
+
+---
+
+## 功能对比
+
+| 特性 | knife4j-aggregation | knife4j-gateway | knife4j-insight | **Knife4j Aggregator** |
+|:-----|:-------------------:|:---------------:|:---------------:|:----------------------:|
+| **独立部署** | ❌ 嵌入宿主应用 | ❌ 依赖 Gateway | ✅ | ✅ |
+| **离线可读** | ❌ | ❌ | ❌ | ✅ 服务下线仍可访问 |
+| **内存缓存** | ❌ | ❌ | ❌ | ✅ 毫秒级响应 |
+| **持久化存储** | ❌ | ❌ | ❌ | ✅ MongoDB |
+| **版本管理** | ❌ | ❌ | ❌ | ✅ 完整追溯 |
+| **API 变更对比** | ❌ | ❌ | ❌ | ✅ Diff 视图 |
+| **Swagger 2.0 自动转换** | ❌ | ❌ | ❌ | ✅ 转 OpenAPI 3.0 |
+| **AI 参数生成** | ❌ | ❌ | ❌ | ✅ 一键生成测试数据 |
+| **AI 错误分析** | ❌ | ❌ | ❌ | ✅ 智能诊断+修复建议 |
+| **Nacos 服务发现** | ✅ | ✅ | ✅ | ✅ |
+| **Nacos 事件订阅** | ❌ | ✅ | ❌ | ✅ 实时感知上下线 |
+| **开源免费** | ✅ | ✅ | ❌ 商业版 | ✅ Apache 2.0 |
+| **业务代码侵入** | 需要改代码 | 需要改代码 | 需要改代码 | ✅ 零侵入 |
+
+---
+
+## AI 智能分析
+
+集成本地 AI 能力（基于 Ollama），为 API 调试提供智能辅助：
+
+### AI 参数生成
+
+根据 API Schema 自动生成符合规范的测试数据，告别手动构造复杂 JSON：
+
+```
++------------------------------------------+
+|  POST /api/users                         |
+|  +------------------------------------+  |
+|  | {                                  |  |
+|  |   "name": "张三",          <-- AI  |  |
+|  |   "email": "zhangsan@test.com",    |  |
+|  |   "age": 28,                       |  |
+|  |   "address": {                     |  |
+|  |     "city": "北京",                |  |
+|  |     "street": "朝阳区建国路88号"    |  |
+|  |   }                                |  |
+|  | }                                  |  |
+|  +------------------------------------+  |
+|              [ 一键生成 ]                 |
++------------------------------------------+
+```
+
+### AI 错误分析
+
+捕获完整请求上下文 + 错误堆栈，AI 解读错误原因并给出修复建议：
+
+```
++------------------------------------------------------------------+
+|  错误响应: 500 Internal Server Error                              |
+|  +--------------------------------------------------------------+ |
+|  |  NullPointerException at UserService.java:42                 | |
+|  |                                                              | |
+|  |  AI 分析:                                                    | |
+|  |  ----------------------------------------------------------- | |
+|  |  问题: user.getAddress() 返回 null，后续调用 getCity() 报错   | |
+|  |                                                              | |
+|  |  建议: 在 UserService.java:42 添加空值检查:                   | |
+|  |        if (user.getAddress() != null) { ... }               | |
+|  |                                                              | |
+|  |  关联请求:                                                    | |
+|  |  POST /api/users/123/bindAddress                             | |
+|  |  Body: {"userId": 123}  <-- 缺少 address 字段                | |
+|  +--------------------------------------------------------------+ |
++------------------------------------------------------------------+
+```
+
+---
+
+## 快速开始
+
+### 方式一：Docker Compose（推荐）
+
+**30 秒启动**，无需安装任何依赖：
+
+```bash
+# 1. 克隆项目
+git clone https://github.com/zhanglongjun/knife4j-aggregator.git
+cd knife4j-aggregator/docker
+
+# 2. 配置环境变量
+cp env.example .env
+# 编辑 .env，配置 Nacos 地址等
+
+# 3. 启动服务
+docker-compose up -d
+
+# 4. 访问文档
+open http://localhost:9090/doc.html
+```
+
+### 方式二：源码构建
+
+```bash
+# 构建 doc-aggregator
+cd knife4j-doc-aggregator
+mvn clean package -DskipTests
+
+# 启动
+java -jar target/knife4j-doc-aggregator-*.jar
+```
+
+### 前置依赖
+
+| 组件 | 必须 | 说明 |
+|------|:----:|------|
+| Nacos | ✅ | 服务注册与发现 |
+| MongoDB | 推荐 | 文档版本持久化，不配置则仅内存缓存 |
+| Ollama | 可选 | AI 功能支持，本地运行大语言模型 |
+
+---
+
+## 架构设计
+
+```
+                              +-----------------+
+                              |   Knife4j UI    |
+                              |   (Vue3 前端)    |
+                              +--------+--------+
+                                       |
+                                       v
++------------------------------------------------------------------------------+
+|                         Knife4j Doc Aggregator                               |
+|  +------------------------------------------------------------------------+  |
+|  |                           API Gateway Layer                            |  |
+|  |  +------------------+  +------------------+  +----------------------+  |  |
+|  |  | /doc.html        |  | /v3/api-docs/*   |  | /api/ai/*            |  |  |
+|  |  | 静态资源          |  | 文档代理          |  | AI 功能代理          |  |  |
+|  |  +------------------+  +------------------+  +----------------------+  |  |
+|  +------------------------------------------------------------------------+  |
+|  |                           Core Services                                |  |
+|  |  +------------------+  +------------------+  +----------------------+  |  |
+|  |  | Discovery        |  | Cache Manager    |  | Version Manager      |  |  |
+|  |  | Nacos 服务发现    |  | 内存缓存          |  | 版本管理 + Diff      |  |  |
+|  |  +------------------+  +------------------+  +----------------------+  |  |
+|  +------------------------------------------------------------------------+  |
+|  |                           Storage Layer                                |  |
+|  |  +------------------------------------------------------------------+  |  |
+|  |  |                         MongoDB                                  |  |  |
+|  |  |   api_doc_versions  |  api_changes  |  service_info  |  sync_log |  |  |
+|  |  +------------------------------------------------------------------+  |  |
+|  +------------------------------------------------------------------------+  |
++------------------------------------------------------------------------------+
+          |                           |                           |
+          v                           v                           v
+   +-------------+             +-------------+             +-------------+
+   |user-service |             |order-service|             | ai-service  |
+   |Spring Boot 3|             |Spring Boot 2|             |Spring AI    |
+   |OpenAPI 3.0  |             |Swagger 2.0  |             |   +Ollama   |
+   +-------------+             +-------------+             +-------------+
+```
+
+---
 
 ## 项目结构
 
 ```
 knife4j-aggregator/
-├── knife4j-doc-aggregator/     # 文档聚合网关服务
-├── knife4j-ai-service/         # AI 分析服务
-├── knife4j-error-collector/    # 错误收集器 SDK（发布到 Maven Central）
-├── knife4j-ui/                 # 前端 UI（Vue3）
-├── examples/                   # 示例服务
-│   ├── spring-boot-2-examples/ # Spring Boot 2.x 示例
-│   └── spring-boot-3-examples/ # Spring Boot 3.x 示例
-└── docker/                     # Docker 部署文件
+├── knife4j-doc-aggregator/         # 核心：文档聚合网关
+├── knife4j-ai-service/             # AI 服务（可选部署）
+├── knife4j-error-collector/        # 错误收集器 SDK
+│   ├── knife4j-error-collector-core/
+│   ├── knife4j-error-collector-spring-boot-starter/          # Spring Boot 2.x
+│   └── knife4j-error-collector-jakarta-spring-boot-starter/  # Spring Boot 3.x
+├── knife4j-ui/                     # 前端 UI（Vue3）
+├── examples/                       # 示例服务
+│   ├── spring-boot-2-examples/     # message-service, order-service
+│   └── spring-boot-3-examples/     # user-service
+└── docker/                         # Docker 部署
 ```
 
-## 快速开始
+---
 
-### 使用 Docker Compose（推荐）
+## 错误收集器 SDK
 
-```bash
-# 进入 docker 目录
-cd docker
-
-# 复制环境变量配置
-cp env.example .env
-
-# 启动服务
-docker-compose up -d
-```
-
-访问: http://localhost:9090/doc.html
-
-### 前置依赖
-
-- **Nacos**: 服务注册与发现
-- **MongoDB**: API 文档版本存储（可选）
-- **Ollama**: AI 模型服务（可选，用于 AI 功能）
-
-## 模块说明
-
-### knife4j-doc-aggregator
-
-API 文档聚合网关，核心功能：
-
-- 自动发现 Nacos 注册的微服务
-- 聚合各服务的 OpenAPI/Swagger 文档
-- 提供统一的 API 文档访问入口
-- API 版本管理与变更检测
-
-### knife4j-ai-service
-
-AI 分析服务，提供：
-
-- 智能参数生成：根据 API 定义自动生成请求参数
-- 错误分析：解析错误堆栈，提供修复建议
-
-### knife4j-error-collector
-
-错误收集器 SDK，特性：
-
-- 支持 Spring Boot 2.x (javax) 和 3.x (jakarta)
-- 自动收集请求上下文和错误堆栈
-- 与 AI 服务联动，提供智能分析
-
-**Maven 依赖**:
+一行依赖，零配置，自动收集错误上下文：
 
 ```xml
 <!-- Spring Boot 3.x -->
@@ -98,62 +229,44 @@ AI 分析服务，提供：
 </dependency>
 ```
 
-### knife4j-ui
+---
 
-基于 Vue3 的前端界面，特性：
+## 配置参考
 
-- 现代化 UI 设计
-- API 文档浏览与调试
-- AI 辅助功能集成
-- API 版本切换
-
-## 架构图
-
-```
-                    ┌─────────────────┐
-                    │   knife4j-ui    │
-                    │   (Vue3 前端)    │
-                    └────────┬────────┘
-                             │
-                    ┌────────▼────────┐
-                    │ doc-aggregator  │
-                    │  (API 网关)      │
-                    └────────┬────────┘
-                             │
-        ┌────────────────────┼────────────────────┐
-        │                    │                    │
-        ▼                    ▼                    ▼
-┌───────────────┐   ┌───────────────┐   ┌───────────────┐
-│ user-service  │   │ order-service │   │message-service│
-│ (Spring Boot  │   │ (Spring Boot  │   │ (Spring Boot  │
-│     3.x)      │   │     2.x)      │   │     2.x)      │
-└───────────────┘   └───────────────┘   └───────────────┘
-        │                    │                    │
-        └────────────────────┼────────────────────┘
-                             │
-                    ┌────────▼────────┐
-                    │  ai-service     │
-                    │  (AI 分析)      │
-                    └────────┬────────┘
-                             │
-                    ┌────────▼────────┐
-                    │     Ollama      │
-                    │   (本地 LLM)    │
-                    └─────────────────┘
+```yaml
+knife4j:
+  aggregator:
+    enabled: true
+    discover:
+      enabled: true
+      excluded-services:
+        - doc-aggregator
+    cache:
+      enabled: true
+      hard-ttl: 86400000   # 24小时
+  ai:
+    enabled: true
+    service-url: http://localhost:9100
 ```
 
-## 配置说明
+更多配置请参考 [docker/README.md](docker/README.md)
 
-详细配置请参考 [docker/README.md](docker/README.md)
-
-## 贡献指南
-
-欢迎提交 Issue 和 Pull Request！
+---
 
 ## 许可证
 
 [Apache License 2.0](LICENSE)
 
-## 相关项目
+---
 
-- [Knife4j](https://github.com/xiaoymin/knife4j) - Swagger2 和 OpenAPI3 增强解决方案
+## 致谢
+
+- [Knife4j](https://github.com/xiaoymin/knife4j) - 优秀的 API 文档增强方案
+- [Spring AI](https://spring.io/projects/spring-ai) - Spring 官方 AI 框架
+- [Ollama](https://ollama.ai/) - 本地大语言模型运行时
+
+---
+
+<p align="center">
+  <b>如果这个项目对你有帮助，请给个 Star 支持一下！</b>
+</p>
