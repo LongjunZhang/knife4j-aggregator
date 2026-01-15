@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doc Aggregator - 构建提示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'PingFang SC', 'Source Han Sans CN', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        .status {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+        .status-title {
+            color: #856404;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .status-desc {
+            color: #856404;
+            font-size: 14px;
+        }
+        .steps {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        .steps h3 {
+            color: #333;
+            margin-bottom: 16px;
+            font-size: 16px;
+        }
+        .step {
+            margin-bottom: 12px;
+            padding-left: 24px;
+            position: relative;
+        }
+        .step::before {
+            content: attr(data-step);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 18px;
+            height: 18px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+            font-size: 13px;
+        }
+        pre {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 13px;
+            margin: 12px 0;
+        }
+        .links {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .link {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        .link:hover {
+            background: #5a67d8;
+        }
+        .link.secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+        .link.secondary:hover {
+            background: #cbd5e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Doc Aggregator 文档聚合服务</h1>
+        
+        <div class="status">
+            <div class="status-title">⚠️ 前端 UI 尚未构建</div>
+            <div class="status-desc">请按照以下步骤构建 knife4j-vue3 前端资源</div>
+        </div>
+        
+        <div class="steps">
+            <h3>构建步骤</h3>
+            <div class="step" data-step="1">
+                进入前端目录：<code>cd knife4j-vue3</code>
+            </div>
+            <div class="step" data-step="2">
+                安装依赖：<code>pnpm install</code> 或 <code>npm install</code>
+            </div>
+            <div class="step" data-step="3">
+                构建项目：<code>pnpm build</code> 或 <code>npm run build</code>
+            </div>
+            <div class="step" data-step="4">
+                复制构建产物到静态资源目录
+            </div>
+        </div>
+        
+        <p style="margin-bottom: 16px; color: #666;">或者使用构建脚本：</p>
+        <pre>cd doc-aggregator
+chmod +x build-ui.sh
+./build-ui.sh</pre>
+        
+        <div class="links">
+            <a href="/v3/api-docs/swagger-config" class="link">查看 Swagger Config</a>
+            <a href="/api/services" class="link secondary">查看服务列表</a>
+        </div>
+    </div>
+    
+    <script>
+        // 自动检测 API 是否可用
+        fetch('/v3/api-docs/swagger-config')
+            .then(res => res.json())
+            .then(data => {
+                console.log('Swagger Config:', data);
+                if (data.urls && data.urls.length > 0) {
+                    console.log('服务列表:', data.urls.map(u => u.name));
+                }
+            })
+            .catch(err => console.error('API 检测失败:', err));
+    </script>
+</body>
+</html>
+
+
+
+
+

@@ -1,0 +1,44 @@
+server:
+  port: 4083
+  servlet:
+    context-path: /messageService
+
+# Springfox Swagger 2 配置
+springfox:
+  documentation:
+    # 启用 Swagger
+    enabled: true
+    swagger-ui:
+      enabled: true
+
+# Knife4j Error Collector 配置（开箱即用，无需 Token）
+knife4j:
+  error-collector:
+    enabled: true
+    stack-max-depth: 5
+    stack-snippet-max-frames: 10
+    ttl-minutes: 30
+    package-whitelist:
+      - com.example
+      - com.github.zhanglongjun
+
+# Spring MVC 路径匹配配置（Springfox 兼容性）
+spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+# 日志配置
+logging:
+  level:
+    com.example.message: DEBUG
+    com.alibaba.nacos: WARN
+    springfox: WARN
+
+# 健康检查
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+

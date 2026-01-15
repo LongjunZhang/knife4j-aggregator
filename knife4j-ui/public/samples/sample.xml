@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<userRequest>
+    <userId>10001</userId>
+    <nickname>测试用户</nickname>
+    <level>VIP</level>
+    <points>1000</points>
+</userRequest>
+

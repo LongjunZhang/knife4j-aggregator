@@ -1,0 +1,56 @@
+server:
+  port: 9100
+
+spring:
+  application:
+    name: knife4j-ai-service
+  ai:
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      chat:
+        options:
+          model: ${OLLAMA_MODEL:qwen2.5-coder:3b}
+          temperature: 0.1
+          top-k: 40
+          top-p: 1
+#          num-predict: 2048
+
+# Knife4j AI 配置
+knife4j:
+  ai:
+    provider: ollama
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      model: ${OLLAMA_MODEL:qwen2.5-coder:3b}
+    timeouts:
+      chat: 60s
+    safety:
+      redact-headers:
+        - authorization
+        - cookie
+        - set-cookie
+    output:
+      max-retries: 2
+
+# 日志配置
+logging:
+  level:
+    com.github.zhanglongjun.knife4j.ai: INFO
+    # 关闭 Spring AI 的冗余日志
+    org.springframework.ai: WARN
+    org.springframework.ai.chat.metadata: ERROR
+
+# 健康检查
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+
+
+
+

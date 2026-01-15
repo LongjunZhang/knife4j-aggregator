@@ -1,0 +1,36 @@
+server:
+  port: 4082
+  servlet:
+    context-path: /orderService
+
+# SpringDoc OpenAPI 配置 (Spring Boot 2.7.x)
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+# Knife4j Error Collector 配置（开箱即用，无需 Token）
+knife4j:
+  error-collector:
+    enabled: true
+    stack-max-depth: 5
+    stack-snippet-max-frames: 10
+    ttl-minutes: 30
+    package-whitelist:
+      - com.example
+      - com.github.zhanglongjun
+
+# 日志配置
+logging:
+  level:
+    com.example.order: DEBUG
+    com.alibaba.nacos: WARN
+
+# 健康检查
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+

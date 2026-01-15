@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.github.zhanglongjun.knife4j.error.javax.autoconfig.ErrorCollectorJavaxAutoConfiguration
+

@@ -1,0 +1,138 @@
+server:
+  port: 9090
+
+spring:
+  application:
+    name: doc-aggregator
+  data:
+    mongodb:
+      uri: mongodb://admin:password123@localhost:27017/doc_aggregator?authSource=admin
+  # WebFlux 静态资源配置
+  web:
+    resources:
+      static-locations:
+        - classpath:/static/
+      add-mappings: true
+  cloud:
+    gateway:
+      # 开启从注册中心动态获取路由
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      # 路由配置
+      routes:
+        # 用户服务路由 (Spring Boot 3.x + knife4j-openapi3-jakarta)
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/userService/**
+        # 订单服务路由 (Spring Boot 2.7.x + springdoc-openapi-ui)
+        - id: order-service
+          uri: lb://order-service
+          predicates:
+            - Path=/orderService/**
+        # 消息服务路由 (Spring Boot 2.7.x + springfox-boot-starter)
+        - id: message-service
+          uri: lb://message-service
+          predicates:
+            - Path=/messageService/**
+
+# Knife4j 聚合器配置 (新配置前缀)
+knife4j:
+  # AI 功能配置
+  ai:
+    enabled: true
+    service-url: http://localhost:9100
+    timeout: 60s
+    safety:
+      redact-headers:
+        - authorization
+        - cookie
+        - set-cookie
+    # 业务响应判断配置
+    business-response:
+      enabled: true
+      success-field: code      # 成功状态码字段名
+      success-value: 200    # 成功状态码值
+  
+  # 错误收集器代理配置（开箱即用，无需配置 Token）
+  error-collector-proxy:
+    enabled: true
+    timeout: 30s
+    internal-api-prefix: /internal/error-collector
+    request-cache-ttl-minutes: 30
+    max-cached-requests: 1000
+  
+  aggregator:
+    # 开启文档聚合
+    enabled: true
+    # 使用服务发现策略
+    strategy: discover
+    # 排序规则
+    tags-sorter: alpha
+    operations-sorter: alpha
+    
+    # 服务发现配置
+    discover:
+      enabled: true
+      # OpenAPI 规范版本（默认，用于未配置端点的服务）
+      version: OpenAPI3
+      # API 文档路径（默认，用于未配置端点的服务）
+      doc-path: /v3/api-docs
+      # 服务名显示格式: original / capitalize
+      display-name-format: original
+      # 是否启用端点自动探测
+      auto-probe-endpoint: true
+      # 端点探测超时时间（毫秒）
+      probe-timeout: 3000
+      # 排除的服务（doc-aggregator 自身不需要展示在文档中）
+      excluded-services:
+        - doc-aggregator
+      # 服务 context-path 映射配置
+      service-context-paths:
+        user-service: /userService
+        order-service: /orderService
+        message-service: /messageService
+      # 服务端点映射（手动覆盖自动探测结果）
+      # message-service 使用 springfox，返回 /v2/api-docs
+      service-endpoints:
+        message-service: /v2/api-docs
+      # OpenAPI3 配置
+      oas3:
+        url: /v3/api-docs
+        oauth2-redirect-url: ""
+        validator-url: ""
+    
+    # 文档缓存配置
+    cache:
+      # 是否启用缓存
+      enabled: true
+      # 硬过期时间（毫秒），开发环境设置为 60 秒，生产环境可设为 86400000（24小时）
+      hard-ttl: 60000
+      # 启动时是否预热缓存
+      warm-up-on-startup: true
+      # 拉取文档的超时时间（毫秒）
+      fetch-timeout: 10000
+    
+    # HTTP Basic 认证配置（可选）
+    basic:
+      enable: false
+      username: admin
+      password: admin
+
+# 日志配置
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    org.springframework.cloud.gateway.route.RouteDefinitionRouteLocator: WARN
+    org.springframework.cloud: INFO
+    com.alibaba.nacos: WARN
+    com.github.zhanglongjun.knife4j.aggregator: DEBUG
+
+# 健康检查
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway

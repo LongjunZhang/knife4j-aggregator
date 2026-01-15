@@ -1,0 +1,53 @@
+server:
+  port: 4081
+  servlet:
+    context-path: /userService
+
+# Feign 配置
+spring:
+  cloud:
+    openfeign:
+      client:
+        config:
+          default:
+            connect-timeout: 5000
+            read-timeout: 5000
+            logger-level: BASIC
+
+# Knife4j 配置
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+  # Error Collector 配置（开箱即用，无需 Token）
+  error-collector:
+    enabled: true
+    stack-max-depth: 5
+    stack-snippet-max-frames: 10
+    ttl-minutes: 30
+    package-whitelist:
+      - com.example
+      - com.github.zhanglongjun
+
+# SpringDoc OpenAPI 配置
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+# 日志配置
+logging:
+  level:
+    com.example.user: DEBUG
+    com.alibaba.nacos: WARN
+    # Feign 日志
+    com.example.user.feign: DEBUG
+
+# 健康检查
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+

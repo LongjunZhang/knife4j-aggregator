@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Maven Central 发布配置模板
+    
+    使用方法：
+    1. 复制此文件到 ~/.m2/settings.xml（或合并到现有 settings.xml）
+    2. 将 YOUR_CENTRAL_USERNAME 替换为你的 Maven Central 用户名
+    3. 将 YOUR_CENTRAL_PASSWORD 替换为你的 Maven Central Token（不是密码！）
+       - 登录 https://central.sonatype.com/ -> View Account -> Generate User Token
+    4. 将 YOUR_GPG_PASSPHRASE 替换为你的 GPG 密钥密码
+-->
+<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 
+                              https://maven.apache.org/xsd/settings-1.2.0.xsd">
+    
+    <servers>
+        <!-- Maven Central 认证配置 -->
+        <server>
+            <id>central</id>
+            <username>YOUR_CENTRAL_USERNAME</username>
+            <password>YOUR_CENTRAL_PASSWORD</password>
+        </server>
+    </servers>
+    
+    <profiles>
+        <profile>
+            <id>release</id>
+            <properties>
+                <!-- GPG 密钥密码 -->
+                <gpg.passphrase>YOUR_GPG_PASSPHRASE</gpg.passphrase>
+            </properties>
+        </profile>
+    </profiles>
+    
+    <activeProfiles>
+        <activeProfile>release</activeProfile>
+    </activeProfiles>
+    
+</settings>
