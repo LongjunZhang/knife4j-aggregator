@@ -29,7 +29,8 @@ services:
       - NACOS_SERVER_ADDR=${NACOS_SERVER_ADDR:-host.docker.internal:8848}
       - NACOS_USERNAME=${NACOS_USERNAME:-nacos}
       - NACOS_PASSWORD=${NACOS_PASSWORD:-nacos}
-      - NACOS_NAMESPACE=${NACOS_NAMESPACE:-public}
+      # 注意: Nacos public 命名空间的 ID 是空字符串，不是 "public"
+      - NACOS_NAMESPACE=${NACOS_NAMESPACE:-}
       # ------------------------------------------
       # Nacos 配置中心（用于动态路由配置）
       # 在 Nacos 中创建 doc-aggregator.yaml 配置

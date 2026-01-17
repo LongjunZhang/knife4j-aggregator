@@ -10,11 +10,13 @@ spring:
       password: ${NACOS_PASSWORD:nacos}
       discovery:
         enabled: true
-        namespace: ${NACOS_NAMESPACE:public}
+        # 注意: Nacos public 命名空间的 ID 是空字符串，不是 "public"
+        namespace: ${NACOS_NAMESPACE:}
       config:
         # 启用 Nacos 配置中心，支持动态路由刷新
         enabled: true
-        namespace: ${NACOS_NAMESPACE:public}
+        # 注意: Nacos public 命名空间的 ID 是空字符串，不是 "public"
+        namespace: ${NACOS_NAMESPACE:}
         # 配置文件格式
         file-extension: yaml
         # 配置 dataId 前缀
