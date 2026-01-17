@@ -20,7 +20,7 @@ echo "工作目录: $(pwd)"
 # ============================================
 # 配置
 # ============================================
-DOCKER_USERNAME="${DOCKER_USERNAME:-zhanglongjun}"
+DOCKER_USERNAME="${DOCKER_USERNAME:-longjunzhang}"
 VERSION="${1:-latest}"
 ACTION="${2:-push}"  # push 或 build
 USE_CHINA_MIRROR="${3:-}"  # china 表示使用国内镜像源
