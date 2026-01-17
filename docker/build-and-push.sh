@@ -77,7 +77,7 @@ fi
 echo ""
 echo "[2/2] 构建 knife4j-ai-service 镜像..."
 echo "镜像名: ${AI_SERVICE_IMAGE}"
-docker build ${BUILD_ARGS} -f knife4j-ai-service/Dockerfile -t ${AI_SERVICE_IMAGE} ./knife4j-ai-service
+docker build ${BUILD_ARGS} -f knife4j-ai-service/Dockerfile -t ${AI_SERVICE_IMAGE} .
 
 if [ $? -eq 0 ]; then
     echo "✅ knife4j-ai-service 镜像构建成功"
