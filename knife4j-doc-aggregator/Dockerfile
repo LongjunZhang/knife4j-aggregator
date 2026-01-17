@@ -45,7 +45,7 @@ RUN mkdir -p /root/.m2 && \
     echo '<?xml version="1.0" encoding="UTF-8"?><settings><mirrors><mirror><id>aliyun</id><mirrorOf>*</mirrorOf><url>https://maven.aliyun.com/repository/public</url></mirror></mirrors></settings>' > /root/.m2/settings.xml
 
 # 复制独立构建用的 pom
-COPY knife4j-doc-aggregator/pom-docker.xml ./pom.xml
+COPY knife4j-doc-aggregator/pom.xml ./pom.xml
 
 # 复制源代码
 COPY knife4j-doc-aggregator/src ./src
