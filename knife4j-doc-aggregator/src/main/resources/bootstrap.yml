@@ -4,13 +4,22 @@ spring:
   cloud:
     nacos:
       # Nacos 服务地址
-      server-addr: 127.0.0.1:8848
+      server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:8848}
       # Nacos 认证
-      username: nacos
-      password: nacos
+      username: ${NACOS_USERNAME:nacos}
+      password: ${NACOS_PASSWORD:nacos}
       discovery:
         enabled: true
-        namespace: public
+        namespace: ${NACOS_NAMESPACE:public}
       config:
-        # 禁用配置中心（本项目使用本地配置，不从 Nacos 拉取）
-        enabled: false
+        # 启用 Nacos 配置中心，支持动态路由刷新
+        enabled: true
+        namespace: ${NACOS_NAMESPACE:public}
+        # 配置文件格式
+        file-extension: yaml
+        # 配置 dataId 前缀
+        prefix: ${spring.application.name}
+        # 配置分组
+        group: ${NACOS_CONFIG_GROUP:DEFAULT_GROUP}
+        # 自动刷新配置
+        refresh-enabled: true

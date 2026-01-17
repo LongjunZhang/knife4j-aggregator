@@ -6,7 +6,7 @@ spring:
     name: doc-aggregator
   data:
     mongodb:
-      uri: mongodb://admin:password123@localhost:27017/doc_aggregator?authSource=admin
+      uri: ${MONGODB_URI:mongodb://admin:password123@localhost:27017/doc_aggregator?authSource=admin}
   # WebFlux 静态资源配置
   web:
     resources:
@@ -20,23 +20,15 @@ spring:
         locator:
           enabled: true
           lower-case-service-id: true
-      # 路由配置
-      routes:
-        # 用户服务路由 (Spring Boot 3.x + knife4j-openapi3-jakarta)
-        - id: user-service
-          uri: lb://user-service
-          predicates:
-            - Path=/userService/**
-        # 订单服务路由 (Spring Boot 2.7.x + springdoc-openapi-ui)
-        - id: order-service
-          uri: lb://order-service
-          predicates:
-            - Path=/orderService/**
-        # 消息服务路由 (Spring Boot 2.7.x + springfox-boot-starter)
-        - id: message-service
-          uri: lb://message-service
-          predicates:
-            - Path=/messageService/**
+      # ===================================================================
+      # 路由配置 - 请在 Nacos 配置中心定义，支持动态刷新
+      # 
+      # 在 Nacos 中创建配置:
+      #   Data ID: doc-aggregator.yaml
+      #   Group: DEFAULT_GROUP
+      #   内容: 参考 docker/nacos-config-example.yaml
+      # ===================================================================
+      routes: []
 
 # Knife4j 聚合器配置 (新配置前缀)
 knife4j:
@@ -89,15 +81,16 @@ knife4j:
       # 排除的服务（doc-aggregator 自身不需要展示在文档中）
       excluded-services:
         - doc-aggregator
-      # 服务 context-path 映射配置
-      service-context-paths:
-        user-service: /userService
-        order-service: /orderService
-        message-service: /messageService
-      # 服务端点映射（手动覆盖自动探测结果）
-      # message-service 使用 springfox，返回 /v2/api-docs
-      service-endpoints:
-        message-service: /v2/api-docs
+      # ===================================================================
+      # 服务路由映射配置 - 请在 Nacos 配置中心定义，支持动态刷新
+      # 
+      # service-context-paths: 服务名 -> 网关路由前缀的映射
+      # service-endpoints: 服务名 -> API 文档端点的映射（覆盖自动探测）
+      #
+      # 示例参考: docker/nacos-config-example.yaml
+      # ===================================================================
+      service-context-paths: {}
+      service-endpoints: {}
       # OpenAPI3 配置
       oas3:
         url: /v3/api-docs

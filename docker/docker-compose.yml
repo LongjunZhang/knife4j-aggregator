@@ -2,10 +2,13 @@
 # Knife4j 文档聚合系统 - Docker Compose 配置
 # 
 # 使用说明:
-#   1. 复制 .env.example 为 .env 并修改配置
+#   1. 复制 env.example 为 .env 并修改配置
 #   2. 确保 Nacos、MongoDB、Ollama 已运行
-#   3. 执行: docker-compose up -d
-#   4. 访问: http://localhost:9090/doc.html
+#   3. 在 Nacos 配置中心创建路由配置（参考 nacos-config-example.yaml）
+#   4. 执行: docker-compose up -d
+#   5. 访问: http://localhost:9090/doc.html
+#
+# 重要: 路由配置需要在 Nacos 配置中心定义，支持动态刷新！
 # ============================================
 version: '3.8'
 
@@ -21,16 +24,22 @@ services:
       - "${DOC_AGGREGATOR_PORT:-9090}:9090"
     environment:
       # ------------------------------------------
-      # Nacos 配置（连接用户自己的 Nacos 实例）
+      # Nacos 服务发现配置
       # ------------------------------------------
-      - SPRING_CLOUD_NACOS_SERVER_ADDR=${NACOS_SERVER_ADDR:-host.docker.internal:8848}
-      - SPRING_CLOUD_NACOS_USERNAME=${NACOS_USERNAME:-nacos}
-      - SPRING_CLOUD_NACOS_PASSWORD=${NACOS_PASSWORD:-nacos}
-      - SPRING_CLOUD_NACOS_DISCOVERY_NAMESPACE=${NACOS_NAMESPACE:-public}
+      - NACOS_SERVER_ADDR=${NACOS_SERVER_ADDR:-host.docker.internal:8848}
+      - NACOS_USERNAME=${NACOS_USERNAME:-nacos}
+      - NACOS_PASSWORD=${NACOS_PASSWORD:-nacos}
+      - NACOS_NAMESPACE=${NACOS_NAMESPACE:-public}
       # ------------------------------------------
-      # MongoDB 配置（连接用户自己的 MongoDB 实例）
+      # Nacos 配置中心（用于动态路由配置）
+      # 在 Nacos 中创建 doc-aggregator.yaml 配置
+      # 参考: nacos-config-example.yaml
       # ------------------------------------------
-      - SPRING_DATA_MONGODB_URI=${MONGODB_URI:-mongodb://admin:password123@host.docker.internal:27017/doc_aggregator?authSource=admin}
+      - NACOS_CONFIG_GROUP=${NACOS_CONFIG_GROUP:-DEFAULT_GROUP}
+      # ------------------------------------------
+      # MongoDB 配置（可选，用于版本管理）
+      # ------------------------------------------
+      - MONGODB_URI=${MONGODB_URI:-mongodb://admin:password123@host.docker.internal:27017/doc_aggregator?authSource=admin}
       # ------------------------------------------
       # AI 服务配置
       # ------------------------------------------

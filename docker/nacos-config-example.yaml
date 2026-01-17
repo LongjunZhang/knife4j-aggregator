@@ -1,0 +1,111 @@
+# ============================================
+# Nacos 配置中心 - 路由配置示例
+# 
+# 使用说明:
+#   1. 登录 Nacos 控制台 (http://localhost:8848/nacos)
+#   2. 进入 配置管理 -> 配置列表
+#   3. 点击 "+" 创建配置
+#   4. 填写:
+#      - Data ID: doc-aggregator.yaml
+#      - Group: DEFAULT_GROUP (或自定义分组)
+#      - 配置格式: YAML
+#      - 配置内容: 复制下方内容并根据实际情况修改
+#   5. 点击 "发布"
+#
+# 配置生效:
+#   - 新增/修改配置后，doc-aggregator 会自动刷新（无需重启）
+#   - 支持热更新路由、服务映射等配置
+# ============================================
+
+# ============================================
+# Spring Cloud Gateway 路由配置
+# ============================================
+spring:
+  cloud:
+    gateway:
+      routes:
+        # ------------------------------------------
+        # 示例: Spring Boot 3.x 服务 (OpenAPI 3.0)
+        # ------------------------------------------
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/userService/**
+        
+        # ------------------------------------------
+        # 示例: Spring Boot 2.x 服务 (springdoc-openapi)
+        # ------------------------------------------
+        - id: order-service
+          uri: lb://order-service
+          predicates:
+            - Path=/orderService/**
+        
+        # ------------------------------------------
+        # 示例: Spring Boot 2.x 服务 (springfox/Swagger 2.0)
+        # ------------------------------------------
+        - id: message-service
+          uri: lb://message-service
+          predicates:
+            - Path=/messageService/**
+
+# ============================================
+# Knife4j 聚合器 - 服务路由映射配置
+# ============================================
+knife4j:
+  aggregator:
+    discover:
+      # ------------------------------------------
+      # 服务 Context Path 映射
+      # 格式: 服务名: 网关路由前缀
+      # 
+      # 作用: 告诉聚合器如何构建文档请求 URL
+      # 例如: user-service 的文档 URL = /userService/v3/api-docs
+      # ------------------------------------------
+      service-context-paths:
+        user-service: /userService
+        order-service: /orderService
+        message-service: /messageService
+      
+      # ------------------------------------------
+      # 服务端点映射（可选）
+      # 格式: 服务名: API文档端点路径
+      # 
+      # 作用: 覆盖自动探测的端点路径
+      # - OpenAPI 3.0 默认: /v3/api-docs
+      # - Swagger 2.0 默认: /v2/api-docs
+      # 
+      # 仅当服务使用非标准端点时才需要配置
+      # ------------------------------------------
+      service-endpoints:
+        # 使用 springfox (Swagger 2.0) 的服务
+        message-service: /v2/api-docs
+        # 其他服务使用默认端点，无需配置
+
+# ============================================
+# 更多配置示例
+# ============================================
+
+# 示例: 添加新服务
+# spring:
+#   cloud:
+#     gateway:
+#       routes:
+#         - id: product-service
+#           uri: lb://product-service
+#           predicates:
+#             - Path=/productService/**
+# 
+# knife4j:
+#   aggregator:
+#     discover:
+#       service-context-paths:
+#         product-service: /productService
+
+# 示例: 排除特定服务
+# knife4j:
+#   aggregator:
+#     discover:
+#       excluded-services:
+#         - doc-aggregator
+#         - gateway-service
+#         - config-server

@@ -114,8 +114,6 @@ Knife4j Aggregator 提供了一套完整的解决方案：
 
 ### 方式一：Docker Compose（推荐）
 
-**30 秒启动**，无需安装任何依赖：
-
 ```bash
 # 1. 克隆项目
 git clone https://github.com/zhanglongjun/knife4j-aggregator.git
@@ -125,10 +123,16 @@ cd knife4j-aggregator/docker
 cp env.example .env
 # 编辑 .env，配置 Nacos 地址等
 
-# 3. 启动服务
+# 3. 在 Nacos 配置中心创建路由配置
+#    登录 Nacos 控制台 -> 配置管理 -> 配置列表 -> 新建配置
+#    - Data ID: doc-aggregator.yaml
+#    - Group: DEFAULT_GROUP
+#    - 配置内容: 参考 nacos-config-example.yaml
+
+# 4. 启动服务
 docker-compose up -d
 
-# 4. 访问文档
+# 5. 访问文档
 open http://localhost:9090/doc.html
 ```
 
@@ -139,17 +143,42 @@ open http://localhost:9090/doc.html
 cd knife4j-doc-aggregator
 mvn clean package -DskipTests
 
-# 启动
-java -jar target/knife4j-doc-aggregator-*.jar
+# 启动（需要配置 Nacos 地址）
+java -jar target/knife4j-doc-aggregator-*.jar \
+  --NACOS_SERVER_ADDR=localhost:8848
 ```
 
 ### 前置依赖
 
 | 组件 | 必须 | 说明 |
 |------|:--:|------|
-| Nacos | ✅  | 服务注册与发现 |
+| Nacos | ✅  | 服务注册发现 + **配置中心（路由配置）** |
 | MongoDB | 可选 | 不配置时仅内存缓存（重启后数据丢失），**版本切换功能需要 MongoDB** |
 | Ollama |  ✅  | AI 功能支持，本地运行大语言模型 |
+
+### 路由配置说明
+
+**重要**: 业务服务的路由需要在 **Nacos 配置中心** 定义，支持动态刷新（无需重启）。
+
+```yaml
+# Nacos 配置示例 (Data ID: doc-aggregator.yaml)
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/userService/**
+
+knife4j:
+  aggregator:
+    discover:
+      service-context-paths:
+        user-service: /userService
+```
+
+详细配置参考: [docker/nacos-config-example.yaml](docker/nacos-config-example.yaml)
 
 ---
 
