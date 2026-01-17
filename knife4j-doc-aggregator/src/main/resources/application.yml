@@ -21,7 +21,7 @@ spring:
           enabled: true
           lower-case-service-id: true
       # ===================================================================
-      # 路由配置 - 请在 Nacos 配置中心定义，支持动态刷新
+      # 路由配置 - 从 Nacos 配置中心读取
       # 
       # 在 Nacos 中创建配置:
       #   Data ID: doc-aggregator.yaml
@@ -82,7 +82,7 @@ knife4j:
       excluded-services:
         - doc-aggregator
       # ===================================================================
-      # 服务路由映射配置 - 请在 Nacos 配置中心定义，支持动态刷新
+      # 服务路由映射配置 - 从 Nacos 配置中心读取
       # 
       # service-context-paths: 服务名 -> 网关路由前缀的映射
       # service-endpoints: 服务名 -> API 文档端点的映射（覆盖自动探测）
@@ -123,9 +123,9 @@ logging:
     com.alibaba.nacos: WARN
     com.github.zhanglongjun.knife4j.aggregator: DEBUG
 
-# 健康检查
+# 健康检查和诊断
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,gateway
+        include: health,info,gateway,env,configprops,refresh

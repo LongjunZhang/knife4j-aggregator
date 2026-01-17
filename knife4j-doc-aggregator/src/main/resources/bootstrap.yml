@@ -1,6 +1,12 @@
 spring:
   application:
     name: doc-aggregator
+  # ===================================================================
+  # Spring Cloud Alibaba 2023.x 需要显式配置 spring.config.import
+  # 格式: nacos:dataId?group=xxx&refreshEnabled=true
+  # ===================================================================
+  config:
+    import: "optional:nacos:doc-aggregator.yaml?group=${NACOS_CONFIG_GROUP:DEFAULT_GROUP}&refreshEnabled=true"
   cloud:
     nacos:
       # Nacos 服务地址

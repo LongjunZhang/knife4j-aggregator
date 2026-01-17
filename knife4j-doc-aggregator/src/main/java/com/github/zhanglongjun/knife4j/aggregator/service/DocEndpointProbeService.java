@@ -86,8 +86,8 @@ public class DocEndpointProbeService {
      * 探测服务的文档端点
      * 
      * 探测顺序：
-     * 1. 尝试 /v3/api-docs
-     * 2. 回退到 /v2/api-docs
+     * 1. 尝试 {contextPath}/v3/api-docs
+     * 2. 回退到 {contextPath}/v2/api-docs
      * 
      * @param serviceName 服务名
      * @param instance 服务实例
@@ -115,8 +115,21 @@ public class DocEndpointProbeService {
         String baseUrl = String.format("http://%s:%d", instance.getHost(), instance.getPort());
         Duration timeout = Duration.ofMillis(properties.getDiscover().getProbeTimeout());
         
-        // 优先尝试 /v3/api-docs
-        return isEndpointAvailable(baseUrl, OAS3_ENDPOINT, timeout)
+        // 获取服务的 contextPath（如果配置了的话）
+        String contextPath = properties.getDiscover().getContextPath(serviceName);
+        if (contextPath == null) {
+            contextPath = "";
+        }
+        
+        final String effectiveContextPath = contextPath;
+        String oas3Endpoint = contextPath + OAS3_ENDPOINT;
+        String swagger2Endpoint = contextPath + SWAGGER2_ENDPOINT;
+        
+        log.debug("服务 {} 端点探测，contextPath: {}, 探测路径: {} 和 {}", 
+                serviceName, effectiveContextPath, oas3Endpoint, swagger2Endpoint);
+        
+        // 优先尝试 {contextPath}/v3/api-docs
+        return isEndpointAvailable(baseUrl, oas3Endpoint, timeout)
                 .flatMap(available -> {
                     if (available) {
                         log.info("服务 {} 探测到 OpenAPI 3 端点: {}", serviceName, OAS3_ENDPOINT);
@@ -125,8 +138,8 @@ public class DocEndpointProbeService {
                         return Mono.just(info);
                     }
                     
-                    // 回退到 /v2/api-docs
-                    return isEndpointAvailable(baseUrl, SWAGGER2_ENDPOINT, timeout)
+                    // 回退到 {contextPath}/v2/api-docs
+                    return isEndpointAvailable(baseUrl, swagger2Endpoint, timeout)
                             .map(swagger2Available -> {
                                 if (swagger2Available) {
                                     log.info("服务 {} 探测到 Swagger 2 端点: {}", serviceName, SWAGGER2_ENDPOINT);

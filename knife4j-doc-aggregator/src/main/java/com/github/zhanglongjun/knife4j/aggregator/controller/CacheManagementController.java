@@ -136,6 +136,54 @@ public class CacheManagementController {
     }
     
     /**
+     * 查看当前加载的配置（用于诊断配置加载问题）
+     */
+    @GetMapping("/config")
+    public ResponseEntity<Map<String, Object>> getConfig() {
+        log.debug("收到查看配置的请求");
+        
+        Map<String, Object> config = new LinkedHashMap<>();
+        config.put("aggregator.enabled", properties.isEnabled());
+        config.put("aggregator.strategy", properties.getStrategy());
+        
+        // Discover 配置
+        Map<String, Object> discover = new LinkedHashMap<>();
+        discover.put("enabled", properties.getDiscover().getEnabled());
+        discover.put("version", properties.getDiscover().getVersion());
+        discover.put("docPath", properties.getDiscover().getDocPath());
+        discover.put("displayNameFormat", properties.getDiscover().getDisplayNameFormat());
+        discover.put("autoProbeEndpoint", properties.getDiscover().isAutoProbeEndpoint());
+        discover.put("probeTimeout", properties.getDiscover().getProbeTimeout());
+        discover.put("excludedServices", properties.getDiscover().getExcludedServices());
+        discover.put("serviceContextPaths", properties.getDiscover().getServiceContextPaths());
+        discover.put("serviceEndpoints", properties.getDiscover().getServiceEndpoints());
+        config.put("discover", discover);
+        
+        // Cache 配置
+        Map<String, Object> cache = new LinkedHashMap<>();
+        cache.put("enabled", properties.getCache().isEnabled());
+        cache.put("hardTtl", properties.getCache().getHardTtl());
+        cache.put("warmUpOnStartup", properties.getCache().isWarmUpOnStartup());
+        cache.put("fetchTimeout", properties.getCache().getFetchTimeout());
+        config.put("cache", cache);
+        
+        // Routes 配置
+        List<Map<String, Object>> routes = new ArrayList<>();
+        for (Knife4jAggregatorProperties.Router router : properties.getRoutes()) {
+            Map<String, Object> r = new LinkedHashMap<>();
+            r.put("name", router.getName());
+            r.put("serviceName", router.getServiceName());
+            r.put("url", router.getUrl());
+            r.put("contextPath", router.getContextPath());
+            r.put("order", router.getOrder());
+            routes.add(r);
+        }
+        config.put("routes", routes);
+        
+        return ResponseEntity.ok(config);
+    }
+    
+    /**
      * 查看指定服务的缓存状态
      */
     @GetMapping("/status/{serviceName}")

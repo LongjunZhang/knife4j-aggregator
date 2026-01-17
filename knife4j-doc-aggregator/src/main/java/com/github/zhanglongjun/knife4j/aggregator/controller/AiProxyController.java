@@ -122,15 +122,8 @@ public class AiProxyController {
                 return forwardSseToAiService("/api/ai/explain-error/stream", request);
             })
             .onErrorResume(e -> {
-                log.warn("Error extracting ApiDefinition for SSE, forwarding without enrichment", e);
+                log.warn("Error extracting ApiDefinition for SSE, forwarding without enrichment: {}", e.getMessage());
                 return forwardSseToAiService("/api/ai/explain-error/stream", request);
-            })
-            .onErrorResume(e -> {
-                log.error("SSE proxy error", e);
-                return Flux.just(ServerSentEvent.<String>builder()
-                    .event("error")
-                    .data("AI 服务不可用: " + e.getMessage())
-                    .build());
             });
     }
     
@@ -170,7 +163,67 @@ public class AiProxyController {
             .doOnNext(event -> log.trace("SSE event received: {}", event.data()))
             .doOnComplete(() -> log.debug("SSE stream completed"))
             .doOnError(e -> log.error("SSE stream error", e))
-            .timeout(properties.getTimeout());
+            .timeout(properties.getTimeout())
+            .onErrorResume(e -> {
+                log.error("AI 服务调用失败: {}", e.getMessage());
+                return createAiServiceErrorResponse(e);
+            })
+            .switchIfEmpty(createAiServiceErrorResponse(new RuntimeException("AI 服务返回空响应")));
+    }
+    
+    /**
+     * 创建 AI 服务不可用的错误响应
+     * 
+     * 返回一个格式化的 JSON 错误响应，前端可以正确解析并显示
+     */
+    private Flux<ServerSentEvent<String>> createAiServiceErrorResponse(Throwable e) {
+        String errorMessage = e.getMessage();
+        String userFriendlyMessage;
+        
+        // 根据错误类型生成友好提示
+        if (errorMessage != null && (errorMessage.contains("Connection refused") 
+                || errorMessage.contains("connection refused"))) {
+            userFriendlyMessage = "AI 服务 (knife4j-ai-service) 连接失败，请检查服务是否已启动";
+        } else if (errorMessage != null && errorMessage.contains("timeout")) {
+            userFriendlyMessage = "AI 服务响应超时，请稍后重试或检查 ai-service 服务状态";
+        } else if (errorMessage != null && errorMessage.contains("空响应")) {
+            userFriendlyMessage = "AI 服务返回空响应，请检查 ai-service 服务是否正常运行";
+        } else {
+            userFriendlyMessage = "AI 服务不可用: " + (errorMessage != null ? errorMessage : "未知错误");
+        }
+        
+        // 构建符合前端期望格式的错误响应
+        String errorJson = String.format(
+            "{\"success\":false,\"error\":true,\"analysis\":{" +
+            "\"errorType\":\"AI 服务不可用\"," +
+            "\"rootCause\":\"%s\"," +
+            "\"suggestion\":\"请确保 knife4j-ai-service 服务已部署并正常运行。可以通过访问 /api/ai/health 检查服务状态。\"," +
+            "\"confidence\":0," +
+            "\"relatedApis\":[]," +
+            "\"nextSteps\":[" +
+            "\"检查 knife4j-ai-service 是否已启动\"," +
+            "\"检查 application.yml 中 knife4j.ai.service-url 配置是否正确\"," +
+            "\"查看 ai-service 服务日志排查问题\"" +
+            "]}}",
+            escapeJson(userFriendlyMessage)
+        );
+        
+        return Flux.just(
+            ServerSentEvent.<String>builder().data(errorJson).build(),
+            ServerSentEvent.<String>builder().event("done").data("[DONE]").build()
+        );
+    }
+    
+    /**
+     * 转义 JSON 字符串中的特殊字符
+     */
+    private String escapeJson(String str) {
+        if (str == null) return "";
+        return str.replace("\\", "\\\\")
+                  .replace("\"", "\\\"")
+                  .replace("\n", "\\n")
+                  .replace("\r", "\\r")
+                  .replace("\t", "\\t");
     }
     
     /**

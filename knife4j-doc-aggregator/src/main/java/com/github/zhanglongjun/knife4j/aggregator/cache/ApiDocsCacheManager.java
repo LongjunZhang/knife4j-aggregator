@@ -376,7 +376,10 @@ public class ApiDocsCacheManager {
                                             serviceName, result.getNewVersion());
                                 }
                             })
-                            .subscribe();
+                            .subscribe(
+                                    result -> {},
+                                    error -> log.warn("服务 {} 文档持久化失败: {}", serviceName, error.getMessage())
+                            );
                 }
                 
                 log.info("服务 {} 文档缓存刷新成功", serviceName);
@@ -400,11 +403,16 @@ public class ApiDocsCacheManager {
                     // 异步持久化
                     if (isPersistenceEnabled()) {
                         persistenceService.persistDocument(serviceName, content)
-                                .subscribe();
+                                .subscribe(
+                                        result -> {},
+                                        error -> log.debug("服务 {} 异步持久化失败: {}", serviceName, error.getMessage())
+                                );
                     }
                 })
-                .doOnError(e -> log.warn("异步刷新服务 {} 文档缓存失败: {}", serviceName, e.getMessage()))
-                .subscribe();
+                .subscribe(
+                        content -> {},
+                        error -> log.warn("异步刷新服务 {} 文档缓存失败: {}", serviceName, error.getMessage())
+                );
     }
     
     /**
