@@ -65,12 +65,12 @@ Knife4j Aggregator 提供了一套完整的解决方案：
 |  POST /api/users                         |
 |  +------------------------------------+  |
 |  | {                                  |  |
-|  |   "name": "张三",          <-- AI  |  |
+|  |   "name": "张三",          <-- AI   |  |
 |  |   "email": "zhangsan@test.com",    |  |
 |  |   "age": 28,                       |  |
 |  |   "address": {                     |  |
-|  |     "city": "北京",                |  |
-|  |     "street": "朝阳区建国路88号"    |  |
+|  |     "city": "北京",                 |  |
+|  |     "street": "朝阳区建国路88号"     |  |
 |  |   }                                |  |
 |  | }                                  |  |
 |  +------------------------------------+  |
@@ -87,15 +87,14 @@ Knife4j Aggregator 提供了一套完整的解决方案：
   "requestMethod": "GET",
   "httpStatus": 500,
   "api": "/messageService/message/exception/arithmetic",
-  "timestamp": "2026-01-17T03:07:17.518913Z",
+  "timestamp": "2026-01-17T03:16:20.012038Z",
   "serviceName": "message-service",
   "instanceId": "198.18.0.1:4083",
-  "errorReason": "MethodArgumentTypeMismatchException: Failed to convert 'java.lang.String' to 'java.lang.Integer'",
-  "rootError": "com.github.zhanglongjun.knife4j.error.javax.filter.JavaxErrorCollectorFilter.doFilter",
-  "analysis": "客户端请求中传递的参数 \"trans\" 无法被正确解析为整数，导致方法参数类型不匹配。",
+  "errorReason": "ArithmeticException:/byzero",
+  "rootError": "com.example.message.controller.MessageController.testArithmeticException:218",
+  "analysis": "在处理请求时，由于除数为零导致了ArithmeticException异常。",
   "solution": [
-    "1. 检查客户端请求中的参数格式是否与预期一致",
-    "2. 确保传递的值为有效整数而非字符串 'trans'"
+    "检查请求参数，确保被除数不为零。"
   ]
 }
 ```
@@ -147,10 +146,10 @@ java -jar target/knife4j-doc-aggregator-*.jar
 ### 前置依赖
 
 | 组件 | 必须 | 说明 |
-|------|:----:|------|
-| Nacos | ✅ | 服务注册与发现 |
+|------|:--:|------|
+| Nacos | ✅  | 服务注册与发现 |
 | MongoDB | 可选 | 不配置时仅内存缓存（重启后数据丢失），**版本切换功能需要 MongoDB** |
-| Ollama | 可选 | AI 功能支持，本地运行大语言模型 |
+| Ollama |  ✅  | AI 功能支持，本地运行大语言模型 |
 
 ---
 
@@ -169,29 +168,29 @@ java -jar target/knife4j-doc-aggregator-*.jar
 |  |                           API Gateway Layer                            |  |
 |  |  +------------------+  +------------------+  +----------------------+  |  |
 |  |  | /doc.html        |  | /v3/api-docs/*   |  | /api/ai/*            |  |  |
-|  |  | 静态资源          |  | 文档代理          |  | AI 功能代理          |  |  |
+|  |  | 静态资源          |  | 文档代理          |  | AI 功能代理            |  |  |
 |  |  +------------------+  +------------------+  +----------------------+  |  |
 |  +------------------------------------------------------------------------+  |
 |  |                           Core Services                                |  |
 |  |  +------------------+  +------------------+  +----------------------+  |  |
 |  |  | Discovery        |  | Cache Manager    |  | Version Manager      |  |  |
-|  |  | Nacos 服务发现    |  | 内存缓存          |  | 版本管理 + Diff      |  |  |
+|  |  | Nacos 服务发现    |  | 内存缓存          |  | 版本管理 + Diff        |  |  |
 |  |  +------------------+  +------------------+  +----------------------+  |  |
 |  +------------------------------------------------------------------------+  |
 |  |                           Storage Layer                                |  |
 |  |  +------------------------------------------------------------------+  |  |
-|  |  |                         MongoDB (可选)                           |  |  |
+|  |  |                         MongoDB (可选)                            |  |  |
 |  |  |   api_doc_versions  |  api_changes  |  service_info  |  sync_log |  |  |
 |  |  +------------------------------------------------------------------+  |  |
 |  +------------------------------------------------------------------------+  |
 +------------------------------------------------------------------------------+
           |                                                     |
-          |   +-----------------------------------------+       |
-          |   |     Knife4j AI Service (可选)           |       |
-          |   |  +----------------+  +---------------+ |       |
-          |   |  |  Spring AI     |  | Ollama LLM    | |       |
-          |   |  |  参数生成       |  | 错误分析       | |       |
-          |   |  +----------------+  +---------------+ |       |
+          |   +----------------------------------------+        |
+          |   |             Knife4j AI Service         |        |
+          |   |  +----------------+  +---------------+ |        |
+          |   |  |  Spring AI     |  | Ollama LLM    | |        |
+          |   |  |  参数生成       |   | 错误分析       | |        |
+          |   |  +----------------+  +---------------+ |        |
           |   +-----------------------------------------+       |
           |                                                     |
           v                                                     v
